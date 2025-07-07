@@ -17,6 +17,9 @@ urlpatterns = [
     path('add-category-ajax/', views.add_category_ajax, name='add_category_ajax'),
     path('article_list/', views.article_list, name='article_list'),
     path('submit_post/', views.submit_post, name='submit_post'),
+    path('delete-post/<int:id>/', views.delete_post, name='delete_post'),
+    path('edit-post/<int:id>/', views.edit_post, name='edit_post'),
+
     path('admin/', admin.site.urls),
 ]
 

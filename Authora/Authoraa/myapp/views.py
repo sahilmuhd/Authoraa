@@ -5,6 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.shortcuts import get_object_or_404, redirect
+from .models import Post
+from .forms import PostForm 
 
 from .models import CustomUser, Role, UserProfile, Post, Category
 
@@ -196,3 +199,34 @@ def article_list(request):
     posts = Post.objects.all().order_by('-id')  # newest first
     return render(request, 'article_list.html', {'posts': posts})
 
+def delete_post(request, id):
+    post = get_object_or_404(Post, id=id)
+    post.delete()
+    return redirect('article_list') 
+
+def edit_post(request, id):
+    post = get_object_or_404(Post, id=id)
+
+    if request.method == "POST":
+        form = PostForm(request.POST, request.FILES, instance=post)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.content = request.POST.get("content")
+            post.is_published = 'is_published' in request.POST
+            post.save()
+
+            # ✅ Update selected categories
+            selected_categories = request.POST.getlist('categories')
+            post.categories.set(selected_categories)
+
+            # ✅ Redirect after update to avoid old values showing
+            return redirect('article_list')  # or your writer dashboard
+
+    else:
+        form = PostForm(instance=post)
+
+    categories = Category.objects.all()
+    return render(request, 'edit_post.html', {
+        'form': form,
+        'data': categories
+    })

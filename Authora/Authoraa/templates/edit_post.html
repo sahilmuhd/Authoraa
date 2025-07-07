@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Article</title>
+
+  <!-- Quill Editor CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+    }
+
+    #editor-container {
+      height: 300px;
+      background: #fff;
+      margin-bottom: 10px;
+    }
+
+    #toolbar {
+      margin-bottom: 10px;
+    }
+
+    .form-section {
+      margin-top: 30px;
+    }
+
+    .btn-add,
+    .btn-submit {
+      background-color: #007bff;
+      color: white;
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .btn-add:hover {
+      background-color: #0056b3;
+    }
+
+    .form-check {
+      margin-bottom: 10px;
+    }
+
+    .btn-view {
+      display: inline-block;
+      background-color: #28a745;
+      color: white;
+      padding: 6px 12px;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+
+    .btn-view:hover {
+      background-color: #218838;
+    }
+
+    input[type="text"],
+    input[type="file"] {
+      padding: 8px;
+      width: 100%;
+      max-width: 500px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    label input[type="checkbox"] {
+      margin-right: 8px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Edit Article</h2>
+
+  <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Title -->
+    <div>
+      <input type="text" name="title" value="{{ form.title.value }}" placeholder="Enter Title" required />
+    </div>
+
+    <!-- Image -->
+    <div>
+      {{ form.image.label_tag }}<br>
+      {{ form.image }}<br>
+      {% if form.instance.image %}
+        <img src="{{ form.instance.image.url }}" alt="Current Image" width="120" style="margin-top:10px;">
+      {% endif %}
+    </div>
+
+    <!-- Quill Toolbar -->
+    <div id="toolbar">
+      <button class="ql-bold"></button>
+      <button class="ql-italic"></button>
+      <button class="ql-underline"></button>
+      <button class="ql-link"></button>
+      <button class="ql-list" value="ordered"></button>
+      <button class="ql-list" value="bullet"></button>
+    </div>
+
+    <!-- Quill Editor -->
+    <div id="editor-container">{{ form.instance.content|safe }}</div>
+    <input type="hidden" name="content" id="contentInput">
+
+    <!-- Assigned Categories -->
+    <div class="form-section">
+      <label>Assigned Categories:</label><br>
+      {% for cat in form.instance.categories.all %}
+        <div class="form-check">
+          <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}" checked>
+          <label for="cat{{ cat.id }}">{{ cat.name }}</label>
+        </div>
+      {% empty %}
+        <p>No categories assigned.</p>
+      {% endfor %}
+
+      <br>
+      <button type="button" class="btn-add" onclick="openCategoryPopup()">+ Add New Category</button>
+    </div>
+
+    <!-- Published Toggle -->
+    <div class="form-section">
+      <label>
+        <input type="checkbox" name="is_published" {% if form.instance.is_published %}checked{% endif %}>
+        Published
+      </label>
+    </div>
+
+    <!-- Submit -->
+    <div class="form-section">
+      <button type="submit" class="btn-submit">Update Article</button>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <a href="{% url 'article_list' %}" class="btn-view">View All Articles</a>
+    </div>
+  </form>
+
+  <!-- Quill JS -->
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.min.js"></script>
+
+  <!-- Initialize Quill -->
+  <script>
+    const quill = new Quill('#editor-container', {
+      theme: 'snow',
+      modules: { toolbar: '#toolbar' }
+    });
+
+    document.querySelector("form").onsubmit = function () {
+      document.querySelector("#contentInput").value = quill.root.innerHTML;
+    };
+  </script>
+
+  <!-- Add Category Popup Logic -->
+  <script>
+    function openCategoryPopup() {
+      window.open("{% url 'add_category' %}", "Add Category", "width=400,height=200");
+    }
+
+    window.addEventListener('message', function (event) {
+      const data = event.data;
+      if (data && data.name && data.id) {
+        const section = document.querySelector('.form-section');
+        const div = document.createElement('div');
+        div.className = 'form-check';
+        div.innerHTML = `
+          <input type="checkbox" name="categories" value="${data.id}" id="cat${data.id}" checked>
+          <label for="cat${data.id}">${data.name}</label>
+        `;
+        section.insertBefore(div, section.querySelector('br'));
+      }
+    }, false);
+  </script>
+
+</body>
+</html>
