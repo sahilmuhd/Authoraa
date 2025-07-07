@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="display-4 text-primary fw-bold">Welcome to Authora Platform</h1>
+    <p class="lead text-muted mt-3">A role-based content management system for readers, writers, verifiers, publishers, and administrators.</p>
+
+    {% if user.is_authenticated %}
+        <div class="alert alert-success mt-4">
+            You're logged in as <strong>{{ user.full_name }}</strong> ({{ user.role.name }}).
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary btn-sm ms-2">Go to Dashboard</a>
+        </div>
+    {% else %}
+        <div class="mt-4">
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg me-3">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-outline-secondary btn-lg">Register</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

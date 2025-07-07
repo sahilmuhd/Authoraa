@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Article List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Submitted Articles</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Categories</th>
+        <th>Published</th>
+        <th>Image</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for post in posts %}
+      <tr>
+        <td>{{ post.id }}</td>
+        <td>{{ post.title }}</td>
+        <td>
+          {% for cat in post.categories.all %}
+            {{ cat.name }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+            No category
+          {% endfor %}
+        </td>
+        <td>{{ post.is_published|yesno:"✅,❌" }}</td>
+        <td>
+          {% if post.image %}
+            <img src="{{ post.image.url }}" alt="Image" width="60">
+          {% else %}
+            No image
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No posts found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</body>
+</html>

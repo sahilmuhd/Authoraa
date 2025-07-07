@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Content Editor{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Rich Text Content Editor</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="editor" class="form-label">Write Your Content:</label>
+            <textarea id="editor" name="content" rows="15">Welcome to TinyMCE!</textarea>
+        </div>
+        <button type="submit" class="btn btn-success">Submit</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- TinyMCE CDN -->
+<script src="https://cdn.tiny.cloud/1/pym4cuy1ekyku8z4rnor22g4jhxr4hr6oty2ugxop4f4bkwp/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
+<!-- TinyMCE Initialization -->
+<script>
+  tinymce.init({
+    selector: '#editor',
+    height: 500,
+    plugins: [
+      'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media',
+      'searchreplace', 'table', 'visualblocks', 'wordcount',
+      'checklist', 'mediaembed', 'casechange', 'formatpainter', 'pageembed',
+      'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste', 'advtable', 'advcode',
+      'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents', 'footnotes',
+      'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown', 'importword', 'exportword', 'exportpdf'
+    ],
+    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | ' +
+             'addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | ' +
+             'emoticons charmap | removeformat',
+    tinycomments_mode: 'embedded',
+    tinycomments_author: 'Author name',
+    mergetags_list: [
+      { value: 'First.Name', title: 'First Name' },
+      { value: 'Email', title: 'Email' }
+    ],
+    ai_request: (request, respondWith) =>
+      respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+  });
+</script>
+{% endblock %}

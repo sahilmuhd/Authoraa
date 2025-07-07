@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Category</title>
+</head>
+<body>
+  <h3>Add New Category</h3>
+  <form id="categoryForm">
+    {% csrf_token %}
+    <input type="text" name="name" placeholder="Category Name" required />
+    <button type="submit">Save</button>
+  </form>
+
+  <script>
+    document.getElementById("categoryForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const name = this.name.value;
+
+      fetch("{% url 'add_category_ajax' %}", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: new URLSearchParams({name})
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.name) {
+          window.opener.postMessage(data, "*");
+          window.close();
+        } else {
+          alert("Category already exists or error occurred.");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

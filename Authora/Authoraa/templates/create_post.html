@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Create New Post{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Create New Post</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Title</label>
+            {{ form.title|as_widget(attrs={'class': 'form-control'}) }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Content</label>
+            {{ form.content }}
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Image</label>
+            {{ form.image|as_widget(attrs={'class': 'form-control'}) }}
+        </div>
+        <div class="form-check mb-3">
+            {{ form.is_published }}
+            <label class="form-check-label">Publish Now</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.tiny.cloud/1/pym4cuy1ekyku8z4rnor22g4jhxr4hr6oty2ugxop4f4bkwp/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+<script>
+  tinymce.init({
+    selector: '#editor',
+    height: 500,
+    plugins: [
+      'link', 'image', 'media', 'table', 'lists', 'code', 'wordcount',
+      'advlist', 'autolink', 'charmap', 'preview', 'anchor', 'searchreplace',
+      'visualblocks', 'fullscreen', 'insertdatetime', 'help'
+    ],
+    toolbar: 'undo redo | styles | bold italic | alignleft aligncenter alignright alignjustify | ' +
+             'bullist numlist outdent indent | link image | code preview fullscreen',
+  });
+</script>
+{% endblock %}

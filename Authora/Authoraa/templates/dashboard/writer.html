@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Article</title>
+
+  <!-- Quill Editor CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.snow.css" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+    }
+
+    #editor-container {
+      height: 300px;
+      background: #fff;
+    }
+
+    #toolbar {
+      margin-bottom: 10px;
+    }
+
+    .form-section {
+      margin-top: 30px;
+    }
+
+    .btn-add,
+    .btn-submit {
+      background-color: #007bff;
+      color: white;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-add:hover {
+      background-color: #0056b3;
+    }
+
+    .form-check {
+      margin-bottom: 10px;
+    }
+
+    .btn-view {
+      display: inline-block;
+      background-color: #28a745;
+      color: white;
+      padding: 6px 12px;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+
+    .btn-view:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Write a New Article</h2>
+
+  <form method="POST" action="{% url 'submit_post' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Title Field -->
+    <div>
+      <input type="text" name="title" placeholder="Enter Title Here" required />
+    </div>
+
+    <!-- Quill Toolbar -->
+    <div id="toolbar">
+      <button class="ql-bold"></button>
+      <button class="ql-italic"></button>
+      <button class="ql-underline"></button>
+      <button class="ql-link"></button>
+      <button class="ql-list" value="ordered"></button>
+      <button class="ql-list" value="bullet"></button>
+    </div>
+
+    <!-- Quill Editor -->
+    <div id="editor-container">
+      <p>Hello World!</p>
+    </div>
+
+    <!-- Hidden field to store HTML content -->
+    <input type="hidden" name="content" id="contentInput">
+
+    <!-- Category Section -->
+    <div class="form-section">
+      <label>Categories:</label><br>
+      {% for cat in data %}
+        <div class="form-check">
+          <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}">
+          <label for="cat{{ cat.id }}">{{ cat.name }}</label>
+        </div>
+      {% empty %}
+      {% endfor %}
+
+      <!-- Add New Category Button -->
+      <br>
+      <button type="button" class="btn-add" onclick="openCategoryPopup()">+ Add New Category</button>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="form-section">
+      <button type="submit" class="btn-submit">Submit Article</button>
+    </div>
+
+    <div style="margin-top: 20px;">
+      <a href="{% url 'article_list' %}" class="btn-view">
+        View Submitted Articles
+      </a>
+    </div>
+  </form>
+
+  <!-- Quill JS -->
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.min.js"></script>
+
+  <!-- Initialize Quill -->
+  <script>
+    const quill = new Quill('#editor-container', {
+      theme: 'snow',
+      modules: { toolbar: '#toolbar' }
+    });
+
+    // Copy editor HTML into hidden input on form submit
+    document.querySelector("form").onsubmit = function () {
+      document.querySelector("#contentInput").value = quill.root.innerHTML;
+    };
+  </script>
+
+  <!-- Add Category Popup Logic -->
+  <script>
+    function openCategoryPopup() {
+      window.open("{% url 'add_category' %}", "Add Category", "width=400,height=200");
+    }
+
+    // Listen for message from popup
+    window.addEventListener('message', function (event) {
+      const data = event.data;
+      if (data && data.name && data.id) {
+        // Append the new category to the list (fixed: use data.id as value)
+        const section = document.querySelector('.form-section');
+        const div = document.createElement('div');
+        div.className = 'form-check';
+        div.innerHTML = `
+          <input type="checkbox" name="categories" value="${data.id}" id="cat${data.id}" checked>
+          <label for="cat${data.id}">${data.name}</label>
+        `;
+        section.insertBefore(div, section.querySelector('br')); // insert above the button
+      }
+    }, false);
+  </script>
+
+</body>
+
+</html>
