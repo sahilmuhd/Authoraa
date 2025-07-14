@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.conf import settings
+import os
 
 # Role table (admin, reader, writer, verifier, publisher)
 class Role(models.Model):
@@ -74,7 +75,16 @@ class Category(models.Model):
 class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
-    image = models.ImageField(upload_to='uploads/', null=True, blank=True)
     is_published = models.BooleanField(default=False)
     published_date = models.DateTimeField(null=True, blank=True)
     categories = models.ManyToManyField(Category)
+    
+class PostImage(models.Model):
+    post = models.ForeignKey(Post, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='post_images/')
+
+    def delete(self, *args, **kwargs):
+        if self.image:
+            if os.path.isfile(self.image.path):
+                os.remove(self.image.path)
+        super().delete(*args, **kwargs)

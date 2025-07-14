@@ -61,22 +61,30 @@
     .btn-view:hover {
       background-color: #218838;
     }
+
+    .input-title {
+      font-size: 28px;
+      font-weight: bold;
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 
 <body>
+   <!-- Title Field -->
 
-  <h2>Write a New Article</h2>
+  <label for="title" style="font-size: 20px; font-weight: 600;">Title:</label><br>
+<input type="text" id="title" name="title" placeholder="Enter Title Here" required class="input-title" />
 
-  <form method="POST" action="{% url 'submit_post' %}" enctype="multipart/form-data">
-    {% csrf_token %}
 
-    <!-- Title Field -->
-    <div>
-      <input type="text" name="title" placeholder="Enter Title Here" required />
-    </div>
+   
 
-    <!-- Quill Toolbar -->
+    <!-- ✅ Updated Toolbar with Image Button -->
     <div id="toolbar">
       <button class="ql-bold"></button>
       <button class="ql-italic"></button>
@@ -94,14 +102,20 @@
     <!-- Hidden field to store HTML content -->
     <input type="hidden" name="content" id="contentInput">
 
+    <!-- ✅ Multiple Image Upload Field -->
+    <div class="form-section">
+      <label>Upload Images:</label><br>
+      <input type="file" name="images" multiple>
+    </div>
+
     <!-- Category Section -->
     <div class="form-section">
       <label>Categories:</label><br>
       {% for cat in data %}
-        <div class="form-check">
-          <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}">
-          <label for="cat{{ cat.id }}">{{ cat.name }}</label>
-        </div>
+      <div class="form-check">
+        <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}">
+        <label for="cat{{ cat.id }}">{{ cat.name }}</label>
+      </div>
       {% empty %}
       {% endfor %}
 
@@ -125,17 +139,65 @@
   <!-- Quill JS -->
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.min.js"></script>
 
-  <!-- Initialize Quill -->
+  <!-- ✅ Quill + Image Upload Logic -->
   <script>
     const quill = new Quill('#editor-container', {
       theme: 'snow',
-      modules: { toolbar: '#toolbar' }
+      modules: {
+        toolbar: {
+          container: '#toolbar',
+          handlers: {
+            image: function () {
+              selectLocalImage();
+            }
+          }
+        }
+      }
     });
 
-    // Copy editor HTML into hidden input on form submit
+    // Set editor content to hidden input
     document.querySelector("form").onsubmit = function () {
       document.querySelector("#contentInput").value = quill.root.innerHTML;
     };
+
+    // Image Upload Handler
+    function selectLocalImage() {
+      const input = document.createElement('input');
+      input.setAttribute('type', 'file');
+      input.setAttribute('accept', 'image/*');
+      input.click();
+
+      input.onchange = () => {
+        const file = input.files[0];
+        if (/^image\//.test(file.type)) {
+          uploadImage(file);
+        } else {
+          alert('Please select an image.');
+        }
+      };
+    }
+
+    // Upload to server and insert into editor
+    function uploadImage(file) {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      fetch("{% url 'upload_image' %}", {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": "{{ csrf_token }}",
+        },
+        body: formData
+      })
+        .then(response => response.json())
+        .then(result => {
+          const range = quill.getSelection();
+          quill.insertEmbed(range.index, 'image', result.url);
+        })
+        .catch(error => {
+          console.error('Image upload failed:', error);
+        });
+    }
   </script>
 
   <!-- Add Category Popup Logic -->
@@ -144,11 +206,9 @@
       window.open("{% url 'add_category' %}", "Add Category", "width=400,height=200");
     }
 
-    // Listen for message from popup
     window.addEventListener('message', function (event) {
       const data = event.data;
       if (data && data.name && data.id) {
-        // Append the new category to the list (fixed: use data.id as value)
         const section = document.querySelector('.form-section');
         const div = document.createElement('div');
         div.className = 'form-check';
@@ -156,7 +216,7 @@
           <input type="checkbox" name="categories" value="${data.id}" id="cat${data.id}" checked>
           <label for="cat${data.id}">${data.name}</label>
         `;
-        section.insertBefore(div, section.querySelector('br')); // insert above the button
+        section.insertBefore(div, section.querySelector('br'));
       }
     }, false);
   </script>

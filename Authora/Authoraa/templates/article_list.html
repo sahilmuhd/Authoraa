@@ -1,19 +1,19 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <title>Article List</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background: #f5f5f5;
+      padding: 20px;
     }
 
     h2 {
       margin-bottom: 20px;
+      text-align: center;
     }
 
     .table-container {
@@ -32,6 +32,7 @@
       border: 1px solid #ccc;
       padding: 10px;
       text-align: left;
+      vertical-align: middle;
     }
 
     th {
@@ -57,22 +58,126 @@
       color: white;
       text-decoration: none;
       cursor: pointer;
+      font-size: 14px;
     }
 
-    .btn-delete {
-      background-color: #dc3545;
+    .btn-delete { background-color: #dc3545; }
+    .btn-delete:hover { background-color: #c82333; }
+
+    .btn-edit { background-color: #17a2b8; }
+    .btn-edit:hover { background-color: #138496; }
+
+    .btn-preview { background-color: #6f42c1; }
+    .btn-preview:hover { background-color: #5936a6; }
+
+    .preview-row {
+      display: none;
+      background-color: #fff9e6;
     }
 
-    .btn-delete:hover {
-      background-color: #c82333;
+    .preview-content {
+      padding: 30px;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
-    .btn-edit {
-      background-color: #17a2b8;
+    .preview-title {
+      font-size: 26px;
+      color: #222;
+      text-align: center;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 6px;
     }
 
-    .btn-edit:hover {
-      background-color: #138496;
+    .preview-categories {
+      font-size: 14px;
+      color: #666;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .preview-categories .cat {
+      display: inline-block;
+      background: #e2e6ea;
+      color: #333;
+      padding: 4px 10px;
+      margin: 3px;
+      border-radius: 12px;
+      font-weight: 500;
+    }
+
+    .preview-content-text {
+      font-size: 16px;
+      line-height: 1.7;
+      color: #333;
+      margin-bottom: 25px;
+    }
+
+    .preview-content-text h1,
+    .preview-content-text h2,
+    .preview-content-text h3 {
+      color: #444;
+      margin-top: 20px;
+    }
+
+    .preview-content-text p {
+      margin-bottom: 16px;
+    }
+
+    .preview-content-text ul {
+      padding-left: 20px;
+    }
+
+    .preview-content-text a {
+      color: #007bff;
+      text-decoration: underline;
+    }
+
+    .preview-images {
+      text-align: center;
+    }
+
+    .preview-images img {
+      display: inline-block;
+      max-width: 300px;
+      width: 100%;
+      height: auto;
+      margin: 12px;
+      border-radius: 8px;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .preview-images img:hover {
+      transform: scale(1.06);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-close {
+      background-color: #6c757d;
+      margin-top: 20px;
+      padding: 8px 16px;
+    }
+
+    .btn-close:hover {
+      background-color: #5a6268;
+    }
+
+    @media screen and (max-width: 768px) {
+      .preview-images img {
+        max-width: 100%;
+        margin: 10px 0;
+      }
+
+      .preview-content {
+        padding: 20px;
+      }
+
+      .preview-title {
+        font-size: 22px;
+      }
     }
   </style>
 </head>
@@ -89,9 +194,10 @@
           <th>Title</th>
           <th>Categories</th>
           <th>Published</th>
-          <th>Image</th>
+          <th>Images</th>
           <th>Delete</th>
           <th>Edit</th>
+          <th>Preview</th>
         </tr>
       </thead>
       <tbody>
@@ -108,11 +214,18 @@
           </td>
           <td>{{ post.is_published|yesno:"✅,❌" }}</td>
           <td>
-            {% if post.image %}
-              <img src="{{ post.image.url }}" alt="Image">
-            {% else %}
-              No image
-            {% endif %}
+            {% with images=post.images.all %}
+              {% if images %}
+                {% for img in images|slice:":3" %}
+                  <img src="{{ img.image.url }}" alt="Image">
+                {% endfor %}
+                {% if images|length > 3 %}
+                  +{{ images|length|add:"-3" }} more
+                {% endif %}
+              {% else %}
+                No image
+              {% endif %}
+            {% endwith %}
           </td>
           <td>
             <form method="POST" action="{% url 'delete_post' post.id %}" onsubmit="return confirm('Are you sure?');">
@@ -123,15 +236,97 @@
           <td>
             <a href="{% url 'edit_post' post.id %}" class="btn btn-edit">Edit</a>
           </td>
+          <td>
+            <button onclick="showPreview({{ post.id }})" class="btn btn-preview">Preview</button>
+          </td>
+        </tr>
+        <tr id="preview-{{ post.id }}" class="preview-row">
+          <td colspan="8">
+            <div class="preview-content">
+              <h3 class="preview-title"></h3>
+              <div class="preview-categories"></div>
+              <div class="preview-content-text"></div>
+              <div class="preview-images"></div>
+              <div style="text-align: center;">
+                <button class="btn btn-close" onclick="hidePreview(this)">Close</button>
+              </div>
+            </div>
+          </td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7">No posts found.</td>
+          <td colspan="8">No posts found.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  <script>
+    function smoothScrollTo(element) {
+      const y = element.getBoundingClientRect().top + window.scrollY;
+      const duration = 800;
+      const start = window.scrollY;
+      const startTime = performance.now();
+
+      function animateScroll(currentTime) {
+        const timeElapsed = currentTime - startTime;
+        const progress = Math.min(timeElapsed / duration, 1);
+        const ease = progress < 0.5
+          ? 2 * progress * progress
+          : -1 + (4 - 2 * progress) * progress;
+
+        window.scrollTo(0, start + (y - start) * ease);
+
+        if (timeElapsed < duration) {
+          requestAnimationFrame(animateScroll);
+        }
+      }
+
+      requestAnimationFrame(animateScroll);
+    }
+
+    function showPreview(postId) {
+      document.querySelectorAll(".preview-row").forEach(row => row.style.display = "none");
+
+      fetch(`/preview/${postId}/`)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(html, 'text/html');
+
+          const title = doc.querySelector('h2')?.innerText || 'No Title';
+          const categories = doc.querySelector('.preview-categories')?.innerHTML || '';
+          const content = doc.querySelector('#post-content')?.innerHTML || '';
+          const images = doc.querySelectorAll('.preview-image');
+
+          const previewRow = document.querySelector(`#preview-${postId}`);
+          previewRow.querySelector('.preview-title').innerText = title;
+          previewRow.querySelector('.preview-categories').innerHTML = categories;
+          previewRow.querySelector('.preview-content-text').innerHTML = content;
+
+          const imgContainer = previewRow.querySelector('.preview-images');
+          imgContainer.innerHTML = '';
+          images.forEach(img => {
+            const cloned = img.cloneNode(true);
+            cloned.classList.add('preview-image');
+            imgContainer.appendChild(cloned);
+          });
+
+          previewRow.style.display = 'table-row';
+          setTimeout(() => smoothScrollTo(previewRow), 100);
+        })
+        .catch(err => {
+          console.error("Preview error:", err);
+          alert("Could not load preview.");
+        });
+    }
+
+    function hidePreview(el) {
+      const row = el.closest('tr');
+      if (row) row.style.display = 'none';
+    }
+  </script>
 
 </body>
 </html>

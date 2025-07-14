@@ -19,10 +19,12 @@ urlpatterns = [
     path('submit_post/', views.submit_post, name='submit_post'),
     path('delete-post/<int:id>/', views.delete_post, name='delete_post'),
     path('edit-post/<int:id>/', views.edit_post, name='edit_post'),
-
+    path('delete-image/<int:id>/', views.delete_post_image, name='delete_post_image'),
+    path('preview/<int:id>/', views.preview_post, name='preview'),
+    path('upload-image/', views.upload_image, name='upload_image'),
     path('admin/', admin.site.urls),
 ]
 
 # 👇 This must be *outside* the main list
 if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)    

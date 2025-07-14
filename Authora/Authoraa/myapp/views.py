@@ -8,8 +8,13 @@ from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from .models import Post
 from .forms import PostForm 
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import os
+from django.conf import settings
 
-from .models import CustomUser, Role, UserProfile, Post, Category
+
+from .models import CustomUser, Role, UserProfile, Post, Category, PostImage
 
 
 # =======================
@@ -179,21 +184,25 @@ def submit_post(request):
         title = request.POST.get("title")
         content = request.POST.get("content")
         category_ids = request.POST.getlist("categories")
-        image = request.FILES.get("image")
+        images = request.FILES.getlist("images")  # handles multiple images
 
         print("Form submitted with:", title, content, category_ids)
 
         post = Post.objects.create(
             title=title,
             content=content,
-            image=image,
             is_published=False
         )
 
         if category_ids:
             post.categories.set(category_ids)
 
+        # Save images using PostImage model
+        for img in images:
+            PostImage.objects.create(post=post, image=img)
+
         return redirect('article_list')
+
     
 def article_list(request):
     posts = Post.objects.all().order_by('-id')  # newest first
@@ -219,8 +228,12 @@ def edit_post(request, id):
             selected_categories = request.POST.getlist('categories')
             post.categories.set(selected_categories)
 
-            # ✅ Redirect after update to avoid old values showing
-            return redirect('article_list')  # or your writer dashboard
+            # ✅ Handle multiple image uploads
+            images = request.FILES.getlist('images')
+            for image in images:
+                PostImage.objects.create(post=post, image=image)
+
+            return redirect('article_list')
 
     else:
         form = PostForm(instance=post)
@@ -228,5 +241,35 @@ def edit_post(request, id):
     categories = Category.objects.all()
     return render(request, 'edit_post.html', {
         'form': form,
-        'data': categories
+        'data': categories,
+        'post': post  # pass post to show existing images if needed
     })
+
+def delete_post_image(request, id):
+    image = get_object_or_404(PostImage, id=id)
+    if request.method == "POST":
+        image.delete()
+    return redirect(request.META.get('HTTP_REFERER', 'article_list'))
+
+
+
+def preview_post(request, id):
+    post = get_object_or_404(Post, id=id)
+    return render(request, 'preview_post.html', {'post': post})
+
+@csrf_exempt
+def upload_image(request):
+    if request.method == 'POST' and request.FILES.get('image'):
+        image = request.FILES['image']
+        upload_path = os.path.join(settings.MEDIA_ROOT, 'uploads')
+        os.makedirs(upload_path, exist_ok=True)
+
+        image_path = os.path.join(upload_path, image.name)
+        with open(image_path, 'wb+') as f:
+            for chunk in image.chunks():
+                f.write(chunk)
+
+        image_url = f"{settings.MEDIA_URL}uploads/{image.name}"
+        return JsonResponse({'url': image_url})
+
+    return JsonResponse({'error': 'Upload failed'}, status=400)

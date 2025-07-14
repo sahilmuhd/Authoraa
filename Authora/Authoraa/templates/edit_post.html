@@ -75,6 +75,44 @@
     label input[type="checkbox"] {
       margin-right: 8px;
     }
+
+    .image-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .image-container {
+      position: relative;
+    }
+
+    .image-container img {
+      height: 100px;
+      border-radius: 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .delete-image-form {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+    }
+
+    .delete-image-form button {
+      background-color: #dc3545;
+      border: none;
+      color: white;
+      font-size: 12px;
+      padding: 4px 7px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .delete-image-form button:hover {
+      background-color: #c82333;
+    }
   </style>
 </head>
 
@@ -82,6 +120,7 @@
 
   <h2>Edit Article</h2>
 
+  <!-- ✅ Article Form -->
   <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
 
@@ -90,13 +129,10 @@
       <input type="text" name="title" value="{{ form.title.value }}" placeholder="Enter Title" required />
     </div>
 
-    <!-- Image -->
+    <!-- Upload New Images -->
     <div>
-      {{ form.image.label_tag }}<br>
-      {{ form.image }}<br>
-      {% if form.instance.image %}
-        <img src="{{ form.instance.image.url }}" alt="Current Image" width="120" style="margin-top:10px;">
-      {% endif %}
+      <label for="images">Upload New Images:</label><br>
+      <input type="file" name="images" id="images" multiple>
     </div>
 
     <!-- Quill Toolbar -->
@@ -117,13 +153,15 @@
     <div class="form-section">
       <label>Assigned Categories:</label><br>
       {% for cat in form.instance.categories.all %}
-        <div class="form-check">
-          <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}" checked>
-          <label for="cat{{ cat.id }}">{{ cat.name }}</label>
-        </div>
+      <div class="form-check">
+        <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}" checked>
+        <label for="cat{{ cat.id }}">{{ cat.name }}</label>
+      </div>
       {% empty %}
-        <p>No categories assigned.</p>
+      <p>No categories assigned.</p>
       {% endfor %}
+
+
 
       <br>
       <button type="button" class="btn-add" onclick="openCategoryPopup()">+ Add New Category</button>
@@ -146,6 +184,22 @@
       <a href="{% url 'article_list' %}" class="btn-view">View All Articles</a>
     </div>
   </form>
+
+  <!-- ✅ Image Preview (OUTSIDE Main Form) -->
+  {% if form.instance.images.all %}
+  <div class="image-preview">
+    {% for img in form.instance.images.all %}
+    <div class="image-container">
+      <img src="{{ img.image.url }}" alt="Existing Image">
+      <form method="POST" action="{% url 'delete_post_image' img.id %}" class="delete-image-form"
+        onsubmit="return confirm('Delete this image?');">
+        {% csrf_token %}
+        <button type="submit" title="Delete Image">&times;</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
   <!-- Quill JS -->
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.min.js"></script>
@@ -184,4 +238,5 @@
   </script>
 
 </body>
+
 </html>
