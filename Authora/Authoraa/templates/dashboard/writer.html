@@ -76,13 +76,16 @@
 </head>
 
 <body>
-   <!-- Title Field -->
 
-  <label for="title" style="font-size: 20px; font-weight: 600;">Title:</label><br>
-<input type="text" id="title" name="title" placeholder="Enter Title Here" required class="input-title" />
+  <h2>Write a New Article</h2>
 
+  <form method="POST" action="{% url 'submit_post' %}" enctype="multipart/form-data">
+    {% csrf_token %}
 
-   
+    <!-- Title Field -->
+    <div>
+      <input type="text" name="title" placeholder="Enter Title Here" required class="input-title" />
+    </div>
 
     <!-- ✅ Updated Toolbar with Image Button -->
     <div id="toolbar">
