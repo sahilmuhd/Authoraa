@@ -1,7 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,75 +11,113 @@
 
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: #f2f4f8;
+      padding: 30px;
+      color: #333;
     }
 
-    #editor-container {
-      height: 300px;
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    form {
+      max-width: 800px;
+      margin: auto;
       background: #fff;
-      margin-bottom: 10px;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
     }
 
-    #toolbar {
-      margin-bottom: 10px;
+    .form-group {
+      margin-bottom: 20px;
     }
 
-    .form-section {
-      margin-top: 30px;
+    input[type="text"],
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
     }
 
-    .btn-add,
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .btn {
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+    }
+
     .btn-submit {
       background-color: #007bff;
       color: white;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
     }
 
-    .btn-add:hover {
+    .btn-submit:hover {
       background-color: #0056b3;
     }
 
-    .form-check {
-      margin-bottom: 10px;
+    .btn-add {
+      background-color: #17a2b8;
+      color: white;
+      margin-top: 10px;
+    }
+
+    .btn-add:hover {
+      background-color: #138496;
     }
 
     .btn-view {
-      display: inline-block;
       background-color: #28a745;
       color: white;
-      padding: 6px 12px;
       text-decoration: none;
-      border-radius: 4px;
+      display: inline-block;
+      margin-top: 20px;
     }
 
     .btn-view:hover {
       background-color: #218838;
     }
 
-    input[type="text"],
-    input[type="file"] {
-      padding: 8px;
-      width: 100%;
-      max-width: 500px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+    .form-check {
+      margin-bottom: 8px;
     }
 
-    label input[type="checkbox"] {
+    .form-check input {
       margin-right: 8px;
+    }
+
+    #toolbar {
+      margin-bottom: 10px;
+    }
+
+    #editor-container {
+      height: 300px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 10px;
     }
 
     .image-preview {
       display: flex;
       flex-wrap: wrap;
-      gap: 15px;
-      margin: 20px 0;
+      gap: 16px;
+      margin-top: 30px;
+      max-width: 800px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .image-container {
@@ -89,8 +126,8 @@
 
     .image-container img {
       height: 100px;
-      border-radius: 5px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
 
     .delete-image-form {
@@ -100,18 +137,37 @@
     }
 
     .delete-image-form button {
-      background-color: #dc3545;
-      border: none;
+      background-color: #ff4d4f;
       color: white;
-      font-size: 12px;
-      padding: 4px 7px;
+      border: none;
       border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 16px;
+      font-weight: bold;
+      line-height: 0;
+      padding: 0;
       cursor: pointer;
-      transition: background 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.2s ease, transform 0.2s ease;
     }
 
     .delete-image-form button:hover {
-      background-color: #c82333;
+      background-color: #d9363e;
+      transform: scale(1.1);
+    }
+
+    @media (max-width: 600px) {
+      form {
+        padding: 20px;
+      }
+
+      .image-container img {
+        height: 80px;
+      }
     }
   </style>
 </head>
@@ -120,22 +176,19 @@
 
   <h2>Edit Article</h2>
 
-  <!-- ✅ Article Form -->
   <form method="POST" enctype="multipart/form-data">
     {% csrf_token %}
 
-    <!-- Title -->
-    <div>
+    <div class="form-group">
+      <label for="title">Title</label>
       <input type="text" name="title" value="{{ form.title.value }}" placeholder="Enter Title" required />
     </div>
 
-    <!-- Upload New Images -->
-    <div>
-      <label for="images">Upload New Images:</label><br>
+    <div class="form-group">
+      <label for="images">Upload New Images</label>
       <input type="file" name="images" id="images" multiple>
     </div>
 
-    <!-- Quill Toolbar -->
     <div id="toolbar">
       <button class="ql-bold"></button>
       <button class="ql-italic"></button>
@@ -145,66 +198,52 @@
       <button class="ql-list" value="bullet"></button>
     </div>
 
-    <!-- Quill Editor -->
     <div id="editor-container">{{ form.instance.content|safe }}</div>
     <input type="hidden" name="content" id="contentInput">
 
-    <!-- Assigned Categories -->
-    <div class="form-section">
-      <label>Assigned Categories:</label><br>
+    <div class="form-group">
+      <label>Assigned Categories</label>
       {% for cat in form.instance.categories.all %}
-      <div class="form-check">
-        <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}" checked>
-        <label for="cat{{ cat.id }}">{{ cat.name }}</label>
-      </div>
+        <div class="form-check">
+          <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}" checked>
+          <label for="cat{{ cat.id }}">{{ cat.name }}</label>
+        </div>
       {% empty %}
-      <p>No categories assigned.</p>
+        <p>No categories assigned.</p>
       {% endfor %}
-
-
-
-      <br>
-      <button type="button" class="btn-add" onclick="openCategoryPopup()">+ Add New Category</button>
+      <button type="button" class="btn btn-add" onclick="openCategoryPopup()">+ Add New Category</button>
     </div>
 
-    <!-- Published Toggle -->
-    <div class="form-section">
+    <div class="form-group">
       <label>
         <input type="checkbox" name="is_published" {% if form.instance.is_published %}checked{% endif %}>
         Published
       </label>
     </div>
 
-    <!-- Submit -->
-    <div class="form-section">
-      <button type="submit" class="btn-submit">Update Article</button>
+    <div class="form-group">
+      <button type="submit" class="btn btn-submit">Update Article</button>
     </div>
 
-    <div style="margin-top: 20px;">
-      <a href="{% url 'article_list' %}" class="btn-view">View All Articles</a>
-    </div>
+    <a href="{% url 'article_list' %}" class="btn btn-view">← View All Articles</a>
   </form>
 
-  <!-- ✅ Image Preview (OUTSIDE Main Form) -->
   {% if form.instance.images.all %}
   <div class="image-preview">
     {% for img in form.instance.images.all %}
     <div class="image-container">
       <img src="{{ img.image.url }}" alt="Existing Image">
       <form method="POST" action="{% url 'delete_post_image' img.id %}" class="delete-image-form"
-        onsubmit="return confirm('Delete this image?');">
+            onsubmit="return confirm('Delete this image?');">
         {% csrf_token %}
-        <button type="submit" title="Delete Image">&times;</button>
+        <button type="submit" title="Delete Image">×</button>
       </form>
     </div>
     {% endfor %}
   </div>
   {% endif %}
 
-  <!-- Quill JS -->
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.min.js"></script>
-
-  <!-- Initialize Quill -->
   <script>
     const quill = new Quill('#editor-container', {
       theme: 'snow',
@@ -214,10 +253,7 @@
     document.querySelector("form").onsubmit = function () {
       document.querySelector("#contentInput").value = quill.root.innerHTML;
     };
-  </script>
 
-  <!-- Add Category Popup Logic -->
-  <script>
     function openCategoryPopup() {
       window.open("{% url 'add_category' %}", "Add Category", "width=400,height=200");
     }
@@ -225,18 +261,16 @@
     window.addEventListener('message', function (event) {
       const data = event.data;
       if (data && data.name && data.id) {
-        const section = document.querySelector('.form-section');
+        const section = document.querySelector('.form-group');
         const div = document.createElement('div');
         div.className = 'form-check';
         div.innerHTML = `
           <input type="checkbox" name="categories" value="${data.id}" id="cat${data.id}" checked>
           <label for="cat${data.id}">${data.name}</label>
         `;
-        section.insertBefore(div, section.querySelector('br'));
+        section.insertBefore(div, section.querySelector('button'));
       }
-    }, false);
+    });
   </script>
-
 </body>
-
 </html>

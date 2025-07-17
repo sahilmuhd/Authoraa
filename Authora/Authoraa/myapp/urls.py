@@ -22,6 +22,9 @@ urlpatterns = [
     path('delete-image/<int:id>/', views.delete_post_image, name='delete_post_image'),
     path('preview/<int:id>/', views.preview_post, name='preview'),
     path('upload-image/', views.upload_image, name='upload_image'),
+    path('submit/<int:post_id>/', views.submit_to_verifier, name='submit_to_verifier'),
+    path('verifier/', views.verifier_dashboard, name='verifier_dashboard'),
+    path('verify/<int:post_id>/', views.verify_article, name='verify_article'),
     path('admin/', admin.site.urls),
 ]
 

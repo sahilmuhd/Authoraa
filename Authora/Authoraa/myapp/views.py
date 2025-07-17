@@ -90,11 +90,13 @@ def logout_view(request):
 def dashboard(request):
     role = request.user.role.name.lower()
 
+    if role == 'verifier':
+        return verifier_dashboard(request)
+
     template_map = {
         'admin': 'dashboard/admin.html',
         'reader': 'dashboard/reader.html',
         'writer': 'dashboard/writer.html',
-        'verifier': 'dashboard/verifier.html',
         'publisher': 'dashboard/publisher.html'
     }
 
@@ -179,6 +181,7 @@ def add_category_ajax(request):
 # 📃 Article Table View
 # =======================
 
+@login_required
 def submit_post(request):
     if request.method == "POST":
         title = request.POST.get("title")
@@ -191,18 +194,18 @@ def submit_post(request):
         post = Post.objects.create(
             title=title,
             content=content,
-            is_published=False
+            is_published=False,
+            author=request.user,  # ✅ Pass current user as author
+            published_date=timezone.now() if 'is_published' in request.POST else None
         )
 
         if category_ids:
             post.categories.set(category_ids)
 
-        # Save images using PostImage model
         for img in images:
             PostImage.objects.create(post=post, image=img)
 
         return redirect('article_list')
-
     
 def article_list(request):
     posts = Post.objects.all().order_by('-id')  # newest first
@@ -273,3 +276,51 @@ def upload_image(request):
         return JsonResponse({'url': image_url})
 
     return JsonResponse({'error': 'Upload failed'}, status=400)
+
+@login_required
+def submit_to_verifier(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+
+    if request.user != post.author:
+        messages.error(request, "You are not allowed to submit this post.")
+        return redirect('article_list')
+
+    if request.user.role.name.lower() != 'writer':
+        messages.error(request, "Only writers can submit articles for verification.")
+        return redirect('article_list')
+
+    if post.status == 'draft':
+        post.status = 'submitted'
+        post.save()
+        messages.success(request, f"Post '{post.title}' submitted for verification.")
+    else:
+        messages.info(request, "This post has already been submitted.")
+
+    return redirect('article_list')
+
+
+# views.py
+from django.http import HttpResponse
+
+@login_required
+def verifier_dashboard(request):
+    if request.user.role.name.lower() != 'verifier':
+        messages.error(request, "Access denied.")
+        return redirect('article_list')
+
+    # ✅ Only show submitted posts
+    submitted_posts = Post.objects.filter(status='submitted')
+    return render(request, 'dashboard/verifier.html', {'submitted_posts': submitted_posts})
+
+@login_required
+def verify_article(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
+    if request.method == 'POST':
+        decision = request.POST.get('decision')  # 'approved' or 'rejected'
+        if decision in ['approved', 'rejected']:
+            post.status = decision
+            post.save()
+    return redirect('verifier_dashboard')  # make sure this matches your URL name
+
+
+

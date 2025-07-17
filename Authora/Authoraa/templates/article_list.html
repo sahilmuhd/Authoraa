@@ -1,138 +1,182 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Article List</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f5f5;
-      padding: 20px;
+      background-color: #f2f4f8;
+      padding: 30px;
     }
 
     h2 {
-      margin-bottom: 20px;
       text-align: center;
+      font-size: 32px;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    #searchInput {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
     }
 
     .table-container {
       overflow-x: auto;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
+      min-width: 1000px;
     }
 
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
+    th,
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #e2e8f0;
       text-align: left;
-      vertical-align: middle;
     }
 
     th {
-      background-color: #007bff;
-      color: white;
+      background-color: #2c3e50;
+      color: #fff;
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      cursor: pointer;
     }
 
-    tr:nth-child(even) {
-      background-color: #f9f9f9;
+    tr:hover {
+      background-color: #f9fafb;
     }
 
     img {
       width: 60px;
       height: auto;
-      border-radius: 5px;
+      border-radius: 6px;
       object-fit: cover;
     }
 
     .btn {
-      padding: 6px 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
       border: none;
-      border-radius: 4px;
+      border-radius: 6px;
       color: white;
+      font-size: 13px;
       text-decoration: none;
       cursor: pointer;
-      font-size: 14px;
+      transition: background 0.2s ease-in-out;
     }
 
-    .btn-delete { background-color: #dc3545; }
-    .btn-delete:hover { background-color: #c82333; }
+    .btn i {
+      font-size: 13px;
+    }
 
-    .btn-edit { background-color: #17a2b8; }
-    .btn-edit:hover { background-color: #138496; }
+    .btn-delete {
+      background-color: #e74c3c;
+    }
 
-    .btn-preview { background-color: #6f42c1; }
-    .btn-preview:hover { background-color: #5936a6; }
+    .btn-delete:hover {
+      background-color: #c0392b;
+    }
+
+    .btn-edit {
+      background-color: #3498db;
+    }
+
+    .btn-edit:hover {
+      background-color: #2980b9;
+    }
+
+    .btn-preview {
+      background-color: #9b59b6;
+    }
+
+    .btn-preview:hover {
+      background-color: #7e3f9d;
+    }
+
+    .btn-close {
+      background-color: #7f8c8d;
+      margin-top: 16px;
+      padding: 8px 18px;
+    }
+
+    .btn-close:hover {
+      background-color: #626e70;
+    }
 
     .preview-row {
       display: none;
-      background-color: #fff9e6;
+      animation: fadeIn 0.3s ease-in-out;
+      background-color: #fcfcfc;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .preview-content {
-      padding: 30px;
+      padding: 28px;
       background: #fff;
       border-radius: 10px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
     }
 
     .preview-title {
-      font-size: 26px;
-      color: #222;
-      text-align: center;
+      font-size: 24px;
+      color: #2c3e50;
       margin-bottom: 12px;
-      border-bottom: 2px solid #ccc;
-      padding-bottom: 6px;
+      text-align: center;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 8px;
     }
 
     .preview-categories {
-      font-size: 14px;
-      color: #666;
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .preview-categories .cat {
       display: inline-block;
-      background: #e2e6ea;
-      color: #333;
-      padding: 4px 10px;
+      background: #ecf0f1;
+      color: #2c3e50;
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 13px;
       margin: 3px;
-      border-radius: 12px;
-      font-weight: 500;
     }
 
     .preview-content-text {
       font-size: 16px;
       line-height: 1.7;
-      color: #333;
-      margin-bottom: 25px;
-    }
-
-    .preview-content-text h1,
-    .preview-content-text h2,
-    .preview-content-text h3 {
       color: #444;
-      margin-top: 20px;
-    }
-
-    .preview-content-text p {
-      margin-bottom: 16px;
-    }
-
-    .preview-content-text ul {
-      padding-left: 20px;
-    }
-
-    .preview-content-text a {
-      color: #007bff;
-      text-decoration: underline;
+      margin-bottom: 24px;
     }
 
     .preview-images {
@@ -141,43 +185,54 @@
 
     .preview-images img {
       display: inline-block;
-      max-width: 300px;
+      max-width: 260px;
       width: 100%;
       height: auto;
       margin: 12px;
       border-radius: 8px;
-      box-shadow: 0 3px 12px rgba(0, 0, 0, 0.15);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
     }
 
     .preview-images img:hover {
-      transform: scale(1.06);
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-    }
-
-    .btn-close {
-      background-color: #6c757d;
-      margin-top: 20px;
-      padding: 8px 16px;
-    }
-
-    .btn-close:hover {
-      background-color: #5a6268;
+      transform: scale(1.04);
     }
 
     @media screen and (max-width: 768px) {
-      .preview-images img {
-        max-width: 100%;
-        margin: 10px 0;
+      table {
+        min-width: 100%;
       }
 
       .preview-content {
-        padding: 20px;
+        padding: 16px;
       }
 
       .preview-title {
-        font-size: 22px;
+        font-size: 20px;
       }
+
+      .btn {
+        font-size: 12px;
+        padding: 5px 10px;
+      }
+
+      img {
+        width: 50px;
+      }
+    }
+
+    #scrollTopBtn {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 18px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
   </style>
 </head>
@@ -185,6 +240,15 @@
 <body>
 
   <h2>Submitted Articles</h2>
+
+  <div style="text-align: right; margin-bottom: 20px;">
+    <a href="{% url 'dashboard' %}" class="btn btn-edit" style="background-color: #2ecc71;">
+      <i class="fas fa-plus"></i> Create New Post
+    </a>
+  </div>
+
+
+  <input type="text" id="searchInput" placeholder="Search by title or category...">
 
   <div class="table-container">
     <table>
@@ -198,6 +262,7 @@
           <th>Delete</th>
           <th>Edit</th>
           <th>Preview</th>
+          <th>Submit</th>
         </tr>
       </thead>
       <tbody>
@@ -207,38 +272,54 @@
           <td>{{ post.title }}</td>
           <td>
             {% for cat in post.categories.all %}
-              {{ cat.name }}{% if not forloop.last %}, {% endif %}
-            {% empty %}
-              No category
-            {% endfor %}
+            <span class="cat">{{ cat.name }}</span>{% if not forloop.last %}, {% endif %}
+            {% empty %}No category{% endfor %}
           </td>
           <td>{{ post.is_published|yesno:"✅,❌" }}</td>
           <td>
             {% with images=post.images.all %}
-              {% if images %}
-                {% for img in images|slice:":3" %}
-                  <img src="{{ img.image.url }}" alt="Image">
-                {% endfor %}
-                {% if images|length > 3 %}
-                  +{{ images|length|add:"-3" }} more
-                {% endif %}
-              {% else %}
-                No image
-              {% endif %}
+            {% if images %}
+            {% for img in images|slice:":3" %}
+            <img src="{{ img.image.url }}" alt="Image">
+            {% endfor %}
+            {% if images|length > 3 %}
+            +{{ images|length|add:"-3" }} more
+            {% endif %}
+            {% else %}
+            No image
+            {% endif %}
             {% endwith %}
           </td>
           <td>
-            <form method="POST" action="{% url 'delete_post' post.id %}" onsubmit="return confirm('Are you sure?');">
+            <form method="POST" action="{% url 'delete_post' post.id %}"
+              onsubmit="return confirm('Are you sure you want to delete this post?');">
               {% csrf_token %}
-              <button type="submit" class="btn btn-delete">Delete</button>
+              <button type="submit" class="btn btn-delete"><i class="fas fa-trash"></i> Delete</button>
             </form>
           </td>
           <td>
-            <a href="{% url 'edit_post' post.id %}" class="btn btn-edit">Edit</a>
+            <a href="{% url 'edit_post' post.id %}" class="btn btn-edit"><i class="fas fa-pen"></i> Edit</a>
           </td>
           <td>
-            <button onclick="showPreview({{ post.id }})" class="btn btn-preview">Preview</button>
+            <button onclick="showPreview({{ post.id }})" class="btn btn-preview"><i class="fas fa-eye"></i>
+              Preview</button>
           </td>
+          <td>
+            {% if post.status == 'draft' %}
+            <form method="post" action="{% url 'submit_to_verifier' post.id %}" style="display:inline-block;">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-warning" style="padding: 6px 12px; font-size: 13px;">
+                <i class="fas fa-paper-plane"></i> Submit
+              </button>
+            </form>
+            {% else %}
+            <span class="cat"
+              style="background-color: #dff0d8; color: #3c763d; font-weight: bold; padding: 6px 12px; border-radius: 6px;">
+              {{ post.status|title }}
+            </span>
+            {% endif %}
+          </td>
+
         </tr>
         <tr id="preview-{{ post.id }}" class="preview-row">
           <td colspan="8">
@@ -247,7 +328,7 @@
               <div class="preview-categories"></div>
               <div class="preview-content-text"></div>
               <div class="preview-images"></div>
-              <div style="text-align: center;">
+              <div style="text-align:center;">
                 <button class="btn btn-close" onclick="hidePreview(this)">Close</button>
               </div>
             </div>
@@ -255,12 +336,14 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="8">No posts found.</td>
+          <td colspan="8" style="text-align:center;">No posts found.</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
+
+  <button id="scrollTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
 
   <script>
     function smoothScrollTo(element) {
@@ -272,61 +355,87 @@
       function animateScroll(currentTime) {
         const timeElapsed = currentTime - startTime;
         const progress = Math.min(timeElapsed / duration, 1);
-        const ease = progress < 0.5
-          ? 2 * progress * progress
-          : -1 + (4 - 2 * progress) * progress;
-
+        const ease = progress < 0.5 ? 2 * progress * progress : -1 + (4 - 2 * progress) * progress;
         window.scrollTo(0, start + (y - start) * ease);
-
-        if (timeElapsed < duration) {
-          requestAnimationFrame(animateScroll);
-        }
+        if (timeElapsed < duration) requestAnimationFrame(animateScroll);
       }
 
       requestAnimationFrame(animateScroll);
     }
 
     function showPreview(postId) {
+      const previewRow = document.querySelector(`#preview-${postId}`);
+      const isVisible = previewRow.style.display === 'table-row';
+
       document.querySelectorAll(".preview-row").forEach(row => row.style.display = "none");
 
-      fetch(`/preview/${postId}/`)
-        .then(res => res.text())
-        .then(html => {
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
+      if (!isVisible) {
+        fetch(`/preview/${postId}/`)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
 
-          const title = doc.querySelector('h2')?.innerText || 'No Title';
-          const categories = doc.querySelector('.preview-categories')?.innerHTML || '';
-          const content = doc.querySelector('#post-content')?.innerHTML || '';
-          const images = doc.querySelectorAll('.preview-image');
+            previewRow.querySelector('.preview-title').innerText = doc.querySelector('h2')?.innerText || 'No Title';
+            previewRow.querySelector('.preview-categories').innerHTML = doc.querySelector('.preview-categories')?.innerHTML || '';
+            previewRow.querySelector('.preview-content-text').innerHTML = doc.querySelector('#post-content')?.innerHTML || '';
 
-          const previewRow = document.querySelector(`#preview-${postId}`);
-          previewRow.querySelector('.preview-title').innerText = title;
-          previewRow.querySelector('.preview-categories').innerHTML = categories;
-          previewRow.querySelector('.preview-content-text').innerHTML = content;
+            const images = doc.querySelectorAll('.preview-image');
+            const imgContainer = previewRow.querySelector('.preview-images');
+            imgContainer.innerHTML = '';
+            images.forEach(img => imgContainer.appendChild(img.cloneNode(true)));
 
-          const imgContainer = previewRow.querySelector('.preview-images');
-          imgContainer.innerHTML = '';
-          images.forEach(img => {
-            const cloned = img.cloneNode(true);
-            cloned.classList.add('preview-image');
-            imgContainer.appendChild(cloned);
+            previewRow.style.display = 'table-row';
+            setTimeout(() => smoothScrollTo(previewRow), 100);
+          })
+          .catch(err => {
+            console.error("Preview error:", err);
+            alert("Could not load preview.");
           });
-
-          previewRow.style.display = 'table-row';
-          setTimeout(() => smoothScrollTo(previewRow), 100);
-        })
-        .catch(err => {
-          console.error("Preview error:", err);
-          alert("Could not load preview.");
-        });
+      }
     }
 
     function hidePreview(el) {
       const row = el.closest('tr');
       if (row) row.style.display = 'none';
     }
+
+    document.getElementById('searchInput').addEventListener('keyup', function () {
+      const filter = this.value.toLowerCase();
+      const rows = document.querySelectorAll('tbody tr:not(.preview-row)');
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+      });
+    });
+
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      if (Math.abs(window.scrollY - lastScrollY) > 300) {
+        document.querySelectorAll(".preview-row").forEach(row => row.style.display = "none");
+      }
+      lastScrollY = window.scrollY;
+    });
+
+    document.querySelectorAll('th').forEach((header, i) => {
+      header.addEventListener('click', () => sortTable(i));
+    });
+
+    function sortTable(columnIndex) {
+      const table = document.querySelector('table');
+      const tbody = table.querySelector('tbody');
+      const rows = Array.from(tbody.querySelectorAll('tr:not(.preview-row)'));
+
+      const sorted = rows.sort((a, b) => {
+        const aText = a.children[columnIndex].innerText.trim().toLowerCase();
+        const bText = b.children[columnIndex].innerText.trim().toLowerCase();
+        return aText.localeCompare(bText);
+      });
+
+      sorted.forEach(row => tbody.appendChild(row));
+    }
   </script>
 
 </body>
+
 </html>

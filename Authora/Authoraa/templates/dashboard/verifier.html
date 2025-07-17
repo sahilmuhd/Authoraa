@@ -1,12 +1,113 @@
-{% extends 'base.html' %}
-{% block title %}Verifier Dashboard{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verifier Dashboard</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 2rem;
+    }
 
-{% block content %}
-<div class="text-center">
-    <h2 class="mb-4">Verifier Dashboard</h2>
-    <div class="card shadow p-4">
-        <h4>Content Verification</h4>
-        <p>Verify the accuracy of submitted content before publication.</p>
-    </div>
-</div>
-{% endblock %}
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #333;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    thead {
+      background-color: #007bff;
+      color: white;
+    }
+
+    th, td {
+      padding: 12px 16px;
+      border: 1px solid #dee2e6;
+      text-align: left;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+
+    .btn {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .btn-approve {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .btn-reject {
+      background-color: #dc3545;
+      color: white;
+      margin-left: 8px;
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    p {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Verifier Dashboard</h1>
+
+    {% if submitted_posts %}
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Author</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in submitted_posts %}
+            <tr>
+              <td>{{ post.title }}</td>
+              <td>{{ post.author.username }}</td>
+              <td>{{ post.status }}</td>
+              <td>
+                <form method="post" action="{% url 'verify_article' post.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <button type="submit" name="action" value="approve" class="btn btn-approve">Approve</button>
+                  <button type="submit" name="action" value="reject" class="btn btn-reject">Reject</button>
+                </form>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p>No submissions available.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -72,13 +72,32 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
+# models.py
+from django.utils import timezone  # make sure this is at the top
+
 class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
     is_published = models.BooleanField(default=False)
-    published_date = models.DateTimeField(null=True, blank=True)
-    categories = models.ManyToManyField(Category)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('draft', 'Draft'),
+            ('submitted', 'Submitted'),
+            ('verified', 'Verified'),
+            ('published', 'Published'),
+        ],
+        default='draft'
+    )
+    categories = models.ManyToManyField(Category, blank=True)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     
+    published_date = models.DateTimeField(null=True, blank=True)  # ✅ ADD THIS FIELD
+
+    def __str__(self):
+        return self.title
+
+
 class PostImage(models.Model):
     post = models.ForeignKey(Post, related_name='images', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='post_images/')

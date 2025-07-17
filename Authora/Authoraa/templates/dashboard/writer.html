@@ -12,82 +12,149 @@
 
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
-      padding: 20px;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f0f2f5;
+      padding: 40px;
+      color: #333;
     }
 
-    #editor-container {
-      height: 300px;
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 32px;
+      color: #222;
+    }
+
+    form {
+      max-width: 850px;
+      margin: auto;
       background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    input[type="text"],
+    input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      box-sizing: border-box;
+    }
+
+    .input-title {
+      font-size: 24px;
+      font-weight: 600;
+      padding: 14px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 25px;
     }
 
     #toolbar {
       margin-bottom: 10px;
     }
 
+    #editor-container {
+      height: 320px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
     .form-section {
       margin-top: 30px;
     }
 
-    .btn-add,
-    .btn-submit {
-      background-color: #007bff;
-      color: white;
-      padding: 5px 10px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .btn-add:hover {
-      background-color: #0056b3;
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 6px;
     }
 
     .form-check {
       margin-bottom: 10px;
     }
 
+    .form-check input {
+      margin-right: 8px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .btn-submit {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .btn-submit:hover {
+      background-color: #0056b3;
+    }
+
+    .btn-add {
+      background-color: #17a2b8;
+      color: white;
+      margin-top: 10px;
+    }
+
+    .btn-add:hover {
+      background-color: #138496;
+    }
+
     .btn-view {
-      display: inline-block;
       background-color: #28a745;
       color: white;
-      padding: 6px 12px;
       text-decoration: none;
-      border-radius: 4px;
+      display: inline-block;
+      margin-top: 30px;
     }
 
     .btn-view:hover {
       background-color: #218838;
     }
 
-    .input-title {
-      font-size: 28px;
-      font-weight: bold;
-      width: 100%;
-      padding: 12px;
-      border: 2px solid #ccc;
-      border-radius: 6px;
-      margin-bottom: 20px;
-      box-sizing: border-box;
+    @media (max-width: 600px) {
+      body {
+        padding: 20px;
+      }
+
+      form {
+        padding: 20px;
+      }
+
+      .input-title {
+        font-size: 20px;
+      }
+
+      #editor-container {
+        height: 250px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <h2>Write a New Article</h2>
+  <h2>Create New Article</h2>
 
   <form method="POST" action="{% url 'submit_post' %}" enctype="multipart/form-data">
     {% csrf_token %}
 
     <!-- Title Field -->
-    <div>
-      <input type="text" name="title" placeholder="Enter Title Here" required class="input-title" />
-    </div>
+    <input type="text" name="title" placeholder="Enter Article Title..." required class="input-title" />
 
-    <!-- ✅ Updated Toolbar with Image Button -->
+    <!-- Toolbar -->
     <div id="toolbar">
       <button class="ql-bold"></button>
       <button class="ql-italic"></button>
@@ -95,54 +162,45 @@
       <button class="ql-link"></button>
       <button class="ql-list" value="ordered"></button>
       <button class="ql-list" value="bullet"></button>
+      <button class="ql-image"></button>
     </div>
 
     <!-- Quill Editor -->
     <div id="editor-container">
-      <p>Hello World!</p>
+      <p>Start writing your article here...</p>
     </div>
 
-    <!-- Hidden field to store HTML content -->
     <input type="hidden" name="content" id="contentInput">
 
-    <!-- ✅ Multiple Image Upload Field -->
+    <!-- Upload Images -->
     <div class="form-section">
-      <label>Upload Images:</label><br>
+      <label>Upload Images</label>
       <input type="file" name="images" multiple>
     </div>
 
-    <!-- Category Section -->
+    <!-- Categories -->
     <div class="form-section">
-      <label>Categories:</label><br>
+      <label>Select Categories</label>
       {% for cat in data %}
-      <div class="form-check">
-        <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}">
-        <label for="cat{{ cat.id }}">{{ cat.name }}</label>
-      </div>
-      {% empty %}
+        <div class="form-check">
+          <input type="checkbox" name="categories" value="{{ cat.id }}" id="cat{{ cat.id }}">
+          <label for="cat{{ cat.id }}">{{ cat.name }}</label>
+        </div>
       {% endfor %}
-
-      <!-- Add New Category Button -->
-      <br>
-      <button type="button" class="btn-add" onclick="openCategoryPopup()">+ Add New Category</button>
+      <button type="button" class="btn btn-add" onclick="openCategoryPopup()">+ Add New Category</button>
     </div>
 
-    <!-- Submit Button -->
+    <!-- Submit -->
     <div class="form-section">
-      <button type="submit" class="btn-submit">Submit Article</button>
+      <button type="submit" class="btn btn-submit">Submit Article</button>
     </div>
 
-    <div style="margin-top: 20px;">
-      <a href="{% url 'article_list' %}" class="btn-view">
-        View Submitted Articles
-      </a>
-    </div>
+    <a href="{% url 'article_list' %}" class="btn btn-view">← View All Articles</a>
   </form>
 
   <!-- Quill JS -->
   <script src="https://cdn.jsdelivr.net/npm/quill@2.0.0/dist/quill.min.js"></script>
 
-  <!-- ✅ Quill + Image Upload Logic -->
   <script>
     const quill = new Quill('#editor-container', {
       theme: 'snow',
@@ -158,12 +216,10 @@
       }
     });
 
-    // Set editor content to hidden input
     document.querySelector("form").onsubmit = function () {
       document.querySelector("#contentInput").value = quill.root.innerHTML;
     };
 
-    // Image Upload Handler
     function selectLocalImage() {
       const input = document.createElement('input');
       input.setAttribute('type', 'file');
@@ -180,7 +236,6 @@
       };
     }
 
-    // Upload to server and insert into editor
     function uploadImage(file) {
       const formData = new FormData();
       formData.append("image", file);
@@ -201,10 +256,7 @@
           console.error('Image upload failed:', error);
         });
     }
-  </script>
 
-  <!-- Add Category Popup Logic -->
-  <script>
     function openCategoryPopup() {
       window.open("{% url 'add_category' %}", "Add Category", "width=400,height=200");
     }
@@ -219,7 +271,7 @@
           <input type="checkbox" name="categories" value="${data.id}" id="cat${data.id}" checked>
           <label for="cat${data.id}">${data.name}</label>
         `;
-        section.insertBefore(div, section.querySelector('br'));
+        section.insertBefore(div, section.querySelector('button'));
       }
     }, false);
   </script>
