@@ -78,7 +78,9 @@ from django.utils import timezone  # make sure this is at the top
 class Post(models.Model):
     title = models.CharField(max_length=255)
     content = models.TextField()
+    image = models.ImageField(upload_to='post_images/', null=True, blank=True)
     is_published = models.BooleanField(default=False)
+    published_date = models.DateTimeField(null=True, blank=True)
     status = models.CharField(
         max_length=20,
         choices=[
@@ -86,16 +88,17 @@ class Post(models.Model):
             ('submitted', 'Submitted'),
             ('verified', 'Verified'),
             ('published', 'Published'),
+            ('rejected', 'Rejected'),
         ],
         default='draft'
     )
+    rejection_reason = models.TextField(blank=True, null=True)
     categories = models.ManyToManyField(Category, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    
-    published_date = models.DateTimeField(null=True, blank=True)  # ✅ ADD THIS FIELD
 
     def __str__(self):
         return self.title
+
 
 
 class PostImage(models.Model):

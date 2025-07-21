@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import os
 from django.conf import settings
+from django.views.decorators.http import require_POST
 
 
 from .models import CustomUser, Role, UserProfile, Post, Category, PostImage
@@ -308,19 +309,57 @@ def verifier_dashboard(request):
         messages.error(request, "Access denied.")
         return redirect('article_list')
 
-    # ✅ Only show submitted posts
-    submitted_posts = Post.objects.filter(status='submitted')
-    return render(request, 'dashboard/verifier.html', {'submitted_posts': submitted_posts})
+    posts = Post.objects.filter(status='submitted')
+    return render(request, 'dashboard/verifier.html', {'posts': posts})
+
+
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
+from .models import Post
 
 @login_required
 def verify_article(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+    if request.user.role.name.lower() != 'verifier':
+        messages.error(request, "Access denied.")
+        return redirect('verifier_dashboard')
+
+    post = get_object_or_404(Post, id=post_id, status='submitted')
+
     if request.method == 'POST':
-        decision = request.POST.get('decision')  # 'approved' or 'rejected'
-        if decision in ['approved', 'rejected']:
-            post.status = decision
-            post.save()
-    return redirect('verifier_dashboard')  # make sure this matches your URL name
+        post.status = 'verified'
+        post.save()
+        messages.success(request, f"Post '{post.title}' has been verified.")
 
+    return redirect('verifier_dashboard')
 
+@require_POST
+@login_required
+def reject_article(request, post_id):
+    post = get_object_or_404(Post, id=post_id)
 
+    if request.user.role.name.lower() != 'verifier':
+        messages.error(request, "Access denied.")
+        return redirect('article_list')
+
+    reason = request.POST.get('reason')
+    post.status = 'rejected'
+    post.rejection_reason = reason
+    post.save()
+
+    messages.success(request, "Post rejected with reason.")
+    return redirect('verifier_dashboard')
+
+@login_required
+def resubmit_post(request, post_id):
+    post = get_object_or_404(Post, id=post_id, author=request.user)
+
+    if post.status != 'rejected':
+        messages.error(request, "Only rejected posts can be resubmitted.")
+        return redirect('verifier_dashboard')  # adjust this to your URL name
+
+    post.status = 'submitted'
+    post.rejection_reason = ''  # clear previous reason
+    post.save()
+
+    messages.success(request, "Post resubmitted for verification.")
+    return redirect('verifier_dashboard')  # adjust as needed

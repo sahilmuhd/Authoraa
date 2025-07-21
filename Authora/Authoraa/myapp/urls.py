@@ -25,6 +25,8 @@ urlpatterns = [
     path('submit/<int:post_id>/', views.submit_to_verifier, name='submit_to_verifier'),
     path('verifier/', views.verifier_dashboard, name='verifier_dashboard'),
     path('verify/<int:post_id>/', views.verify_article, name='verify_article'),
+    path('reject/<int:post_id>/', views.reject_article, name='reject_article'),
+    path('resubmit/<int:post_id>/', views.resubmit_post, name='resubmit_post'),
     path('admin/', admin.site.urls),
 ]
 
