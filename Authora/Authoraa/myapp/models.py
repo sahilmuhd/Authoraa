@@ -93,6 +93,8 @@ class Post(models.Model):
         default='draft'
     )
     rejection_reason = models.TextField(blank=True, null=True)
+    rejection_count = models.PositiveIntegerField(default=0)
+    edited_after_verification = models.BooleanField(default=False)
     categories = models.ManyToManyField(Category, blank=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

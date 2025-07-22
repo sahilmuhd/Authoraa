@@ -219,20 +219,37 @@ def delete_post(request, id):
 
 def edit_post(request, id):
     post = get_object_or_404(Post, id=id)
+    original_title = post.title
+    original_content = post.content
 
     if request.method == "POST":
         form = PostForm(request.POST, request.FILES, instance=post)
         if form.is_valid():
             post = form.save(commit=False)
+
+            # Check if content or title changed after verification
+            is_verified = post.status == 'verified'
+            has_changed = (
+                original_title != post.title or 
+                original_content != request.POST.get("content")
+            )
+
+            # Update content manually (Quill editor)
             post.content = request.POST.get("content")
+
+            # If verified and edited, revert to draft for resubmission
+            if is_verified and has_changed:
+                post.status = 'draft'
+                post.edited_after_verification = True
+
             post.is_published = 'is_published' in request.POST
             post.save()
 
-            # ✅ Update selected categories
+            # Update categories
             selected_categories = request.POST.getlist('categories')
             post.categories.set(selected_categories)
 
-            # ✅ Handle multiple image uploads
+            # Handle images
             images = request.FILES.getlist('images')
             for image in images:
                 PostImage.objects.create(post=post, image=image)
@@ -246,8 +263,9 @@ def edit_post(request, id):
     return render(request, 'edit_post.html', {
         'form': form,
         'data': categories,
-        'post': post  # pass post to show existing images if needed
+        'post': post
     })
+
 
 def delete_post_image(request, id):
     image = get_object_or_404(PostImage, id=id)
@@ -292,6 +310,7 @@ def submit_to_verifier(request, post_id):
 
     if post.status == 'draft':
         post.status = 'submitted'
+        post.edited_after_verification = False
         post.save()
         messages.success(request, f"Post '{post.title}' submitted for verification.")
     else:
@@ -344,6 +363,7 @@ def reject_article(request, post_id):
     reason = request.POST.get('reason')
     post.status = 'rejected'
     post.rejection_reason = reason
+    post.rejection_count += 1 
     post.save()
 
     messages.success(request, "Post rejected with reason.")
