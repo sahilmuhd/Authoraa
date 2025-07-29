@@ -43,7 +43,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'myapp'
+    'myapp',
+    'admin_interface',
+    'colorfield',  # required for admin-interface
+
 ]
 
 MIDDLEWARE = [
